@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Friends - Novessa GymBro{% endblock %}
+{% block sub %}Train with people who keep you honest{% endblock %}
+{% block content %}
+<h2 style="margin-top:0">Add a friend</h2>
+<form class="card row">
+<input aria-label="Friend's username" placeholder="Username">
+<button class="btn sm" type="button" style="flex:0 0 auto">Send request</button>
+</form>
+<h2>Requests</h2>
+<div class="card"><ul class="list">
+{% for f in requests %}<li><span class="grow">{{ f }}</span><button class="btn sm" type="button">Accept</button></li>{% endfor %}
+</ul></div>
+<h2>Your friends</h2>
+<div class="card"><ul class="list">
+{% for f in friends %}<li><span class="grow">{{ f.name }}</span><span class="pill">{{ f.streak }} day streak</span></li>{% endfor %}
+</ul></div>
+{% endblock %}

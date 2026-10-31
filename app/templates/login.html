@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Sign in - Novessa GymBro{% endblock %}
+{% block header %}{% endblock %}
+{% block nav %}{% endblock %}
+{% block content %}
+<div class="center"><div class="card">
+<h2 style="margin-top:0">Sign in to Novessa GymBro</h2>
+<form>
+<label for="u">Username</label><input id="u" name="username" autocomplete="username">
+<label for="p">Password</label><input id="p" name="password" type="password" autocomplete="current-password">
+<div style="height:16px"></div>
+<button class="btn" type="button">Sign in</button>
+</form>
+<h2>New here?</h2>
+<form>
+<label for="ru">Choose a username</label><input id="ru" name="username">
+<label for="re">Email</label><input id="re" name="email" type="email">
+<label for="rp">Password</label><input id="rp" name="password" type="password" autocomplete="new-password">
+<div style="height:16px"></div>
+<button class="btn alt" type="button">Create account</button>
+</form>
+</div></div>
+{% endblock %}

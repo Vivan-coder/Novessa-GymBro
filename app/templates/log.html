@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Log workout - Novessa GymBro{% endblock %}
+{% block sub %}Log a workout{% endblock %}
+{% block content %}
+<form class="card">
+<label for="d">Date</label><input id="d" type="date">
+<label for="e">Exercise</label>
+<select id="e"><option>Bench press</option><option>Squat</option><option>Deadlift</option><option>Add custom exercise...</option></select>
+<h2>Sets</h2>
+{% for n in [1,2,3] %}
+<div class="row" style="margin-bottom:8px">
+<input aria-label="Set {{ n }} reps" type="number" placeholder="Set {{ n }} reps">
+<input aria-label="Set {{ n }} weight in kg" type="number" step="0.5" placeholder="kg">
+</div>
+{% endfor %}
+<button class="btn alt" type="button">Add set</button>
+<div style="height:12px"></div>
+<button class="btn" type="button">Save workout</button>
+</form>
+{% endblock %}

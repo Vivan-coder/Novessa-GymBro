@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Novessa GymBro{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+{% block header %}<header class="top"><h1>Novessa GymBro</h1><p>{% block sub %}{% endblock %}</p></header>{% endblock %}
+<main>{% block content %}{% endblock %}</main>
+{% block nav %}{% set p = request.url.path %}
+<nav class="nav">
+<a href="/" class="{{ 'on' if p == '/' }}"><b>🏠</b>Home</a>
+<a href="/log" class="{{ 'on' if p == '/log' }}"><b>🏋️</b>Log</a>
+<a href="/schedule" class="{{ 'on' if p == '/schedule' }}"><b>📅</b>Schedule</a>
+<a href="/friends" class="{{ 'on' if p == '/friends' }}"><b>👥</b>Friends</a>
+<a href="/leaderboard" class="{{ 'on' if p == '/leaderboard' }}"><b>🏆</b>Board</a>
+</nav>{% endblock %}
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block sub %}Your week at a glance{% endblock %}
+{% block content %}
+<div class="stats">
+<div><b>5</b><small>Day streak</small></div>
+<div><b>86%</b><small>Adherence</small></div>
+<div><b>12.4k</b><small>kg this week</small></div>
+</div>
+<h2>This week</h2>
+<div class="card">
+<ul class="list">
+<li><span class="grow">Mon</span><span class="pill">Done</span></li>
+<li><span class="grow">Wed</span><span class="pill">Done</span></li>
+<li><span class="grow">Fri</span><span class="pill hot">Today</span></li>
+</ul>
+</div>
+<a class="btn" href="/log">Log today's workout</a>
+{% endblock %}

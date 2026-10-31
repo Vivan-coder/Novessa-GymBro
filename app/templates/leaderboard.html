@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard - Novessa GymBro{% endblock %}
+{% block sub %}This week, you and your friends{% endblock %}
+{% block content %}
+{% set top = rows[0] %}
+<section class="lead">
+<p>Leading this week</p>
+<h2>{{ top.name }}</h2>
+<div class="stats" style="margin-top:14px">
+<div><b>{{ top.streak }}</b><small>Day streak</small></div>
+<div><b>{{ top.adherence }}%</b><small>Adherence</small></div>
+<div><b>{{ top.volume }}</b><small>kg</small></div>
+</div>
+</section>
+<div class="card"><ul class="list">
+{% for r in rows[1:] %}
+<li><span class="rank">{{ loop.index + 1 }}</span><span class="grow">{{ r.name }}<br><span class="mute">{{ r.volume }} kg lifted</span></span>
+<span class="pill">{{ r.streak }} day streak</span><span class="pill hot">{{ r.adherence }}%</span></li>
+{% endfor %}
+</ul></div>
+{% endblock %}
