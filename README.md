@@ -5,6 +5,9 @@ A Novessa product.
 > Status: in development. Live demo coming soon.
 
 <!-- Add screenshot here: ![Dashboard](docs/screenshots/dashboard.png) -->
+<img width="1917" height="962" alt="image" src="https://github.com/user-attachments/assets/6cb69d49-6778-4cc6-b81d-82600e94b32e" />
+<img width="1917" height="966" alt="image" src="https://github.com/user-attachments/assets/8fb97fd1-02ad-4612-92c9-ca4d84de7bab" />
+
 
 ## What it does
 
