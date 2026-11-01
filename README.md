@@ -1,16 +1,53 @@
-# Novessa GymBro
+# Novessa-GymBro
+Stay consistent with your workouts and compete with your friends for the best Gym Bro
+A Novessa product.
 
-A mobile-first gym accountability app. Log workouts, set your gym days, keep a streak, add friends, and compete on a weekly leaderboard.
+> Status: working MVP. Live demo coming soon.
 
-## Run it
+<!-- Add screenshot here: ![Dashboard](docs/screenshots/dashboard.png) -->
 
-```powershell
+## What it does
+
+Log your workouts, set your own gym schedule, and see how you stack up against friends on consistency and progress, not just raw weight lifted.
+
+- **Workout logging:** exercises, sets, reps, and weight, with your last session shown as a hint
+- **Custom schedule:** choose your gym days; your streak only breaks if you miss a scheduled day
+- **Friends:** send and accept requests; only accepted friends see your stats
+- **Crew leaderboard:** weekly training volume, streak, and adherence % side by side, plus a friends' activity feed
+- **PRs and progress:** automatic personal-record detection and a strength chart per lift
+
+## Roadmap
+
+- [x] Project structure and repository
+- [x] Database models
+- [x] Register and login
+- [x] Workout logging
+- [x] Schedule and streak logic
+- [x] Friends (request and accept)
+- [x] Leaderboard
+- [x] Tests
+- [ ] Edit a logged workout
+- [ ] Deployment
+
+## Tech stack
+
+- **Backend:** Python, FastAPI
+- **Database:** SQLite via the standard-library `sqlite3` module (development)
+- **Frontend:** Jinja templates, HTML, CSS, a little JavaScript (mobile-first)
+- **Testing:** pytest
+
+## Run locally
+
+```
+git clone https://github.com/Vivan-coder/Novessa-GymBro.git
+cd Novessa-GymBro
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
-python -m uvicorn app.main:app --reload     # open http://127.0.0.1:8000
-python -m pytest                            # run the tests (pip install pytest first)
+uvicorn app.main:app --reload
 ```
 
-The SQLite database is created automatically in `data/` on first start. Set `GYMBRO_DATA` to use another folder.
+Then open http://127.0.0.1:8000. The SQLite database is created in `data/` on first start (set `GYMBRO_DATA` to use another folder). Run the tests with `python -m pytest`.
 
 ## Features (and why each one exists)
 
@@ -30,9 +67,12 @@ Modelled on what Strong, Hevy and Strava do well. Each feature targets one reaso
 
 **Schema migration:** adding PR tracking meant a new `workouts.pr` column. `CREATE TABLE IF NOT EXISTS` never alters an existing table, so `db.init()` checks `PRAGMA table_info` and runs `ALTER TABLE` for old databases. Existing data is kept (there is a test for this).
 
-## What was wrong with the original
+## Design decisions
 
-The project was a **UI shell**: every page rendered hard-coded fake data (`LEADERS = [...]`), every button was `type="button"` with no behaviour, and the forms had no `method`/`action`. Nothing could be saved. The fix was to add the missing back end: accounts, a database, and real routes.
+- **Streaks follow your schedule.** Rest days don't break a streak, and schedule changes only affect future days, so history is never rewritten.
+- **Streaks are calculated, not stored.** Computing them from workout dates keeps them accurate if data changes.
+- **Consent for sharing.** Friendships need an accepted request before any stats are visible.
+- **Consistency over raw lifts.** Adherence % makes comparisons fair across experience levels.
 
 ## How it fits together
 
@@ -45,15 +85,15 @@ Browser ──HTTP──> app/main.py (routes) ──> app/db.py (SQL + rules) �
 | File | Job | Why it's separate |
 |---|---|---|
 | `app/main.py` | URL routes, validation, sessions | Thin web layer |
-| `app/db.py` | Schema, password hashing, streak/adherence maths | Testable without HTTP |
+| `app/db.py` | Schema, password hashing, streak/PR/chart maths | Testable without HTTP |
 | `app/templates/` | HTML pages, all extending `base.html` | One layout, no duplication |
 | `app/static/style.css` | Styling | Cached by the browser |
 | `tests/test_app.py` | End-to-end and unit tests | Safety net for changes |
 
 ### Database (5 tables)
 
-- `users`: username (unique, case-insensitive), email, password hash.
-- `workouts`: one row per exercise per day; `sets`: reps and kg, many per workout.
+- `users`: username (unique, case-insensitive), password hash. (The legacy `email` column is kept but no longer collected.)
+- `workouts`: one row per exercise per day, with a `pr` flag; `sets`: reps and kg, many per workout.
 - `schedule`: which weekdays (0 = Mon) a user plans to train.
 - `friendships`: `requester → addressee` with `status` pending/accepted.
 
@@ -64,9 +104,9 @@ Volume, streak and adherence are **computed from workouts on demand**, not store
 1. **Sessions.** After login the server puts `uid` in a signed cookie (Starlette `SessionMiddleware`). The cookie is tamper-proof, not encrypted, so never put secrets in it. The signing key is generated once and stored in `data/secret.key`.
 2. **Password storage.** Passwords are hashed with a random salt and PBKDF2 (`db.hash_pw`), compared in constant time (`hmac.compare_digest`).
 3. **Post/Redirect/Get.** Every form POST ends in a 303 redirect, so pressing refresh doesn't resubmit.
-4. **Security basics.** Parameterised SQL (`?`) blocks SQL injection. Jinja2 auto-escaping blocks XSS. All routes except `/login` and `/register` require a session (`current_user`). `SameSite=Lax` cookies give baseline CSRF protection.
+4. **Security basics.** Parameterised SQL (`?`) blocks SQL injection. Jinja2 auto-escaping blocks XSS. All routes except `/login` and `/register` require a session (`current_user`). An `Origin` check plus `SameSite=Lax` cookies protect against CSRF.
 5. **Streak rules** are documented in `db.stats` and pinned by a unit test with a fixed date. Taking `today` as a parameter makes time-dependent code testable.
-6. **Progressive enhancement.** Forms work without JavaScript. The small script on the log page only adds the "Add set" button and the custom-exercise box.
+6. **Progressive enhancement.** Forms work without JavaScript. The scripts on the log page only add the "Add set" button, the custom-exercise box, "last time" and the rest timer.
 
 ## Known limits and next steps (good exercises)
 
@@ -74,5 +114,10 @@ Volume, streak and adherence are **computed from workouts on demand**, not store
 - **Login rate limit** (5 failures per 5 minutes per IP and username) lives in memory, so it resets on restart and isn't shared across processes. Use Redis if you scale out.
 - Set `https_only=True` on the session middleware when deployed behind HTTPS.
 - You can delete a logged workout (own workouts only) but not edit one yet.
-- The leaderboard ranks by streak, then adherence, then volume. Change the sort key in `leaderboard()` if you prefer another rule.
+- The crew board ranks by streak, then adherence, then volume (or by volume with `?by=volume`). Change the sort keys in `crew()` if you prefer another rule.
+- `requirements.txt` still lists `sqlmodel`/`SQLAlchemy` from the original plan; the app currently uses plain `sqlite3`. Adopt SQLModel or drop them.
 - For several users or machines, move from SQLite to PostgreSQL and add migrations (Alembic).
+
+## Author
+
+Built by Vivan, Computer Science student.

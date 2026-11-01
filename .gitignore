@@ -2,3 +2,5 @@ data/
 __pycache__/
 .pytest_cache/
 .venv/
+*.db
+.env
