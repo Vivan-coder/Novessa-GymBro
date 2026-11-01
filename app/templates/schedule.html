@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Gym days - GymBro{% endblock %}
+{% block heading %}Gym days{% endblock %}
+{% block content %}
+<form class="card" method="post" action="/schedule">
+<div class="days">
+{% set names = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] %}
+{% for d in ["M","T","W","T","F","S","S"] %}
+<label class="day"><input type="checkbox" name="day" value="{{ loop.index0 }}" aria-label="{{ names[loop.index0] }}" {{ 'checked' if loop.index0 in sched }}><span>{{ d }}</span></label>
+{% endfor %}
+</div>
+<p class="mute">Your streak only breaks if you miss one of these days. Rest days are free.</p>
+<button class="btn" type="submit">Save gym days</button>
+<a class="link block" href="/">Back to home</a>
+</form>
+{% endblock %}

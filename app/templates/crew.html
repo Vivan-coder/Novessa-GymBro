@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_icons.html" import ico %}
+{% from "_feed.html" import feed_list %}
+{% block title %}Crew - GymBro{% endblock %}
+{% block heading %}Your crew{% endblock %}
+{% block content %}
+{% if requests %}
+<section class="card">
+<h2>Friend requests</h2>
+<ul class="list">
+{% for f in requests %}<li><span class="avatar" aria-hidden="true">{{ f.username[0]|upper }}</span><span class="grow">{{ f.username }}</span>
+<form method="post" action="/friends/accept"><input type="hidden" name="user_id" value="{{ f.id }}"><button class="chip on" type="submit">Accept</button></form></li>{% endfor %}
+</ul>
+</section>
+{% endif %}
+
+<section class="card">
+<div class="card-head"><h2>This week</h2>
+<div class="chips"><a class="chip {{ 'on' if by == 'streak' }}" href="/crew?by=streak">Streak</a><a class="chip {{ 'on' if by == 'volume' }}" href="/crew?by=volume">Volume</a></div></div>
+<ol class="list board">
+{% for r in rows %}
+<li class="{{ 'me' if r.me }}">
+<span class="rank {{ 'first' if loop.first and (r.streak or r.volume) }}">{{ loop.index }}</span>
+<span class="grow"><b>{{ 'You' if r.me else r.name }}</b><br><span class="mute">{{ r.volume_fmt }} kg lifted · {{ r.adherence }}% adherence</span></span>
+<span class="pill {{ 'fire' if r.streak }}">{{ ico('flame', 14) }} {{ r.streak }}</span>
+</li>
+{% endfor %}
+</ol>
+{% if rows|length == 1 %}<p class="mute">It's just you for now. Add a friend below to compete.</p>{% endif %}
+</section>
+
+<section class="card">
+<h2>Add a friend</h2>
+<form class="row" method="post" action="/friends/add">
+<input name="username" aria-label="Friend's username" placeholder="Their username" required>
+<button class="btn sm" type="submit">Send</button>
+</form>
+</section>
+
+<h2>Activity</h2>
+<section class="card">{{ feed_list(feed) }}</section>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Sign in - GymBro{% endblock %}
+{% block header %}{% endblock %}
+{% block nav %}{% endblock %}
+{% block content %}
+<div class="center">
+<div class="auth">
+<h1 class="wordmark">GYM<em>BRO</em></h1>
+<p class="tagline">Show up. Stack streaks. Out-lift your friends.</p>
+{% if msg %}<p class="flash">{{ msg }}</p>{% endif %}{% if err %}<p class="flash bad" role="alert">{{ err }}</p>{% endif %}
+<form class="card" method="post" action="/login">
+<h2>Sign in</h2>
+<label for="u">Username</label><input id="u" name="username" autocomplete="username" required>
+<label for="p">Password</label><input id="p" name="password" type="password" autocomplete="current-password" required>
+<button class="btn" type="submit">Sign in</button>
+</form>
+<form class="card" method="post" action="/register">
+<h2>New here? Join</h2>
+<label for="ru">Pick a username</label><input id="ru" name="username" required minlength="3" maxlength="24" autocomplete="username">
+<label for="rp">Password (6+ characters)</label><input id="rp" name="password" type="password" autocomplete="new-password" required minlength="6">
+<button class="btn ghost" type="submit">Create account</button>
+</form>
+</div>
+</div>
+{% endblock %}

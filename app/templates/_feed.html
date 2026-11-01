@@ -1,0 +1,14 @@
+{% from "_icons.html" import ico %}
+{% macro feed_list(items) %}
+<ul class="list feed">
+{% for f in items %}
+<li>
+<span class="avatar" aria-hidden="true">{{ f.who[0]|upper }}</span>
+<span class="grow"><b>{{ f.who }}</b> {{ 'hit a PR on' if f.pr else 'trained' }} <b>{{ f.exercise }}</b><br><span class="mute">{{ f.sets }} sets · {{ f.vol }} kg · {{ f.when }}</span></span>
+{% if f.pr %}<span class="pill gold">{{ ico('trophy', 14) }} PR</span>{% endif %}
+</li>
+{% else %}
+<li><span class="mute">No activity yet. Log a workout to kick things off.</span></li>
+{% endfor %}
+</ul>
+{% endmacro %}

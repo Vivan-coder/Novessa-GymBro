@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_icons.html" import ico %}
+{% block title %}Progress - GymBro{% endblock %}
+{% block heading %}Progress{% endblock %}
+{% block content %}
+<div class="tiles">
+<div class="tile"><small>Workouts</small><b>{{ totals.n }}</b></div>
+<div class="tile"><small>Total lifted</small><b>{{ volume }}<span> kg</span></b></div>
+<div class="tile"><small>PRs</small><b>{{ totals.prs }}</b></div>
+</div>
+
+{% if not lifts %}
+<section class="card empty">
+<h2>Nothing to chart yet</h2>
+<p class="mute">Log your first workout and your strength curve shows up here.</p>
+<a class="btn" href="/log">Log a workout</a>
+</section>
+{% else %}
+<div class="chips scroll" role="tablist" aria-label="Exercise">
+{% for l in lifts %}<a class="chip {{ 'on' if l.exercise == sel }}" href="/progress?ex={{ l.exercise|urlencode }}">{{ l.exercise }}</a>{% endfor %}
+</div>
+
+<section class="card">
+<div class="card-head"><h2>{{ sel }}</h2><span class="mute">{{ picked.sessions }} {{ 'session' if picked.sessions == 1 else 'sessions' }}</span></div>
+{% if chart %}
+<p class="mute">Estimated one-rep max (kg)</p>
+<svg class="chart" viewBox="0 0 {{ chart.w }} {{ chart.h }}" role="img" aria-label="{{ sel }} estimated 1RM from {{ chart.lo }} to {{ chart.hi }} kilograms">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8ff2e" stop-opacity=".35"/><stop offset="1" stop-color="#c8ff2e" stop-opacity="0"/></linearGradient></defs>
+{% if chart.pts|length > 1 %}<polygon points="{{ chart.area }}" fill="url(#g)"/><polyline points="{{ chart.line }}" fill="none" stroke="#c8ff2e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>{% endif %}
+{% for p in chart.pts %}<circle cx="{{ p.x }}" cy="{{ p.y }}" r="{{ 5 if loop.last else 3 }}" fill="{{ '#c8ff2e' if loop.last else '#0a0c0f' }}" stroke="#c8ff2e" stroke-width="2"><title>{{ p.day }}: {{ p.v }} kg</title></circle>{% endfor %}
+</svg>
+<div class="chart-foot"><span class="mute">{{ chart.pts[0].day }}</span><span class="mute">{{ chart.pts[-1].day }}</span></div>
+<div class="tiles two">
+<div class="tile"><small>Best est. 1RM</small><b>{{ picked.best|round|int }}<span> kg</span></b></div>
+<div class="tile"><small>Latest</small><b>{{ chart.pts[-1].v }}<span> kg</span></b></div>
+</div>
+{% else %}
+<p class="mute">Bodyweight lifts (0 kg) can't be charted. Add weight to see a curve.</p>
+{% endif %}
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "_icons.html" import ico %}
+{% block title %}Log workout - GymBro{% endblock %}
+{% block heading %}Log workout{% endblock %}
+{% block content %}
+<form class="card" method="post" action="/log">
+<label for="d">Date</label><input id="d" name="day" type="date" value="{{ today }}" max="{{ today }}" required>
+<label for="e">Exercise</label>
+<select id="e" name="exercise">{% for x in exercises %}<option>{{ x }}</option>{% endfor %}<option value="__custom__">Add custom exercise...</option></select>
+<input id="c" name="custom" aria-label="Custom exercise name" placeholder="Exercise name" maxlength="60" hidden style="margin-top:8px">
+<div id="last" class="lastbox" hidden>
+<span id="lasttext"></span>
+<button class="link" type="button" id="copy">Use these sets</button>
+</div>
+<div class="card-head"><h2>Sets</h2><span class="mute">reps × kg</span></div>
+<div id="sets">
+{% for n in [1,2,3] %}
+<div class="row set">
+<span class="setnum" aria-hidden="true">{{ n }}</span>
+<input aria-label="Set {{ n }} reps" name="reps" type="number" inputmode="numeric" min="1" placeholder="reps">
+<input aria-label="Set {{ n }} weight in kg" name="weight" type="number" inputmode="decimal" min="0" step="0.5" placeholder="kg">
+</div>
+{% endfor %}
+</div>
+<button class="btn ghost" type="button" id="add">+ Add set</button>
+<button class="btn" type="submit">Save workout</button>
+</form>
+
+<section class="card timer" aria-label="Rest timer">
+<div class="card-head"><h2>{{ ico('timer', 18) }} Rest timer</h2><output id="clock" aria-live="off">0:00</output></div>
+<div class="chips" role="group" aria-label="Start rest timer">
+<button type="button" class="chip" data-s="60">1:00</button>
+<button type="button" class="chip" data-s="90">1:30</button>
+<button type="button" class="chip" data-s="120">2:00</button>
+<button type="button" class="chip" data-s="180">3:00</button>
+<button type="button" class="chip" id="stop">Stop</button>
+</div>
+</section>
+
+{% if recent %}
+<h2>History</h2>
+<section class="card"><ul class="list">
+{% for r in recent %}<li>
+<span class="grow">{{ r.exercise }} {% if r.pr %}<span class="pill gold">{{ ico('trophy', 14) }} PR</span>{% endif %}<br><span class="mute">{{ r.day }} · {{ r.n }} sets · {{ fmt(r.vol) }} kg</span></span>
+<form method="post" action="/log/{{ r.id }}/delete" onsubmit="return confirm('Delete this workout?')"><button class="chip danger" type="submit" aria-label="Delete {{ r.exercise }} on {{ r.day }}">Delete</button></form>
+</li>{% endfor %}
+</ul></section>
+{% endif %}
+
+<script>
+const LAST = {{ last|tojson }};
+const sel = document.getElementById("e"), cu = document.getElementById("c"), box = document.getElementById("sets");
+const lastBox = document.getElementById("last"), lastText = document.getElementById("lasttext");
+
+function addRow(reps, kg) {
+  const n = box.children.length + 1, r = document.createElement("div");
+  r.className = "row set";
+  r.innerHTML = '<span class="setnum" aria-hidden="true">' + n + '</span>' +
+    '<input aria-label="Set ' + n + ' reps" name="reps" type="number" inputmode="numeric" min="1" placeholder="reps">' +
+    '<input aria-label="Set ' + n + ' weight in kg" name="weight" type="number" inputmode="decimal" min="0" step="0.5" placeholder="kg">';
+  if (reps != null) { r.children[1].value = reps; r.children[2].value = kg; }
+  box.appendChild(r);
+  return r;
+}
+function showLast() {
+  const l = LAST[sel.value];
+  if (!l) { lastBox.hidden = true; return; }
+  lastText.textContent = "Last time (" + l.day + "): " + l.sets.map(s => s[0] + "×" + s[1]).join(", ");
+  lastBox.hidden = false;
+}
+sel.onchange = () => {
+  const on = sel.value === "__custom__";
+  cu.hidden = !on; cu.required = on; if (on) cu.focus();
+  showLast();
+};
+document.getElementById("add").onclick = () => addRow().children[1].focus();
+document.getElementById("copy").onclick = () => {
+  const l = LAST[sel.value]; if (!l) return;
+  box.innerHTML = "";
+  l.sets.forEach(s => addRow(s[0], s[1]));
+};
+showLast();
+
+// Rest timer
+let tick = null, left = 0;
+const clock = document.getElementById("clock");
+const fmt = s => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+function stop(label) { clearInterval(tick); tick = null; clock.textContent = label || "0:00"; }
+document.querySelectorAll(".chip[data-s]").forEach(b => b.onclick = () => {
+  stop(); left = +b.dataset.s; clock.textContent = fmt(left);
+  tick = setInterval(() => {
+    left--; clock.textContent = fmt(left);
+    if (left <= 0) { stop("Go!"); if (navigator.vibrate) navigator.vibrate([200, 100, 200]); }
+  }, 1000);
+});
+document.getElementById("stop").onclick = () => stop();
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_icons.html" import ico %}
+{% from "_feed.html" import feed_list %}
+{% block title %}Home - GymBro{% endblock %}
+{% block heading %}Hey, {{ user.username }}{% endblock %}
+{% block content %}
+<section class="card hero">
+<div class="streak"><span class="flame {{ 'lit' if s.streak }}">{{ ico('flame', 40) }}</span><b>{{ s.streak }}</b><span>day streak</span></div>
+{% if s.streak == 0 %}
+<p class="mute">Log a workout to light the flame.</p>
+{% elif ms.target %}
+<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ ms.pct }}" aria-label="Progress to {{ ms.target }}-day streak"><i style="width:{{ ms.pct }}%"></i></div>
+<p class="mute">{{ ms.left }} more {{ 'day' if ms.left == 1 else 'days' }} to a {{ ms.target }}-day streak</p>
+{% else %}
+<p class="mute">Legend status. Keep it going.</p>
+{% endif %}
+</section>
+
+<section class="card">
+<div class="card-head"><h2>This week</h2><a class="link" href="/schedule">{{ ico('calendar', 16) }} Edit gym days</a></div>
+<ol class="week">
+{% for d in strip %}
+<li class="dot {{ d.state }} {{ 'now' if d.is_today }}" aria-label="{{ d.name }}: {{ d.state }}">
+{% if d.state == 'done' %}{{ ico('check', 18) }}{% else %}{{ d.letter }}{% endif %}
+</li>
+{% endfor %}
+</ol>
+{% if today_state == 'done' %}
+<a class="btn ghost" href="/log">Done for today. Log another exercise</a>
+{% elif today_state == 'rest' %}
+<a class="btn ghost" href="/log">Rest day. Log a bonus session</a>
+{% else %}
+<a class="btn" href="/log">Log today's workout</a>
+{% endif %}
+</section>
+
+<div class="tiles">
+<div class="tile"><small>Volume this week</small><b>{{ s.volume_fmt }}<span> kg</span></b>
+{% if delta is not none %}<em class="{{ 'up' if delta >= 0 else 'down' }}">{{ '+' if delta >= 0 }}{{ delta }}% vs last week</em>{% else %}<em>First week on record</em>{% endif %}</div>
+<div class="tile"><small>Adherence (7 days)</small><b>{{ s.adherence }}<span>%</span></b><em>of planned days</em></div>
+<div class="tile"><small>PRs (30 days)</small><b>{{ prs }}</b><em>{{ 'Keep pushing' if not prs else 'Nice work' }}</em></div>
+</div>
+
+<h2>Crew activity</h2>
+<section class="card">{{ feed_list(feed) }}<a class="link block" href="/crew">See the leaderboard</a></section>
+{% endblock %}

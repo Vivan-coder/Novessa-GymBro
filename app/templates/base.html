@@ -1,0 +1,35 @@
+<!doctype html>
+{% from "_icons.html" import ico %}
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0c0f">
+<title>{% block title %}GymBro{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+{% block header %}
+<header class="top">
+<div class="topbar"><span class="brand">GYM<em>BRO</em></span>
+<form method="post" action="/logout"><button class="icon-btn" type="submit" aria-label="Log out">{{ ico('logout', 20) }}</button></form></div>
+<h1>{% block heading %}{% endblock %}</h1>
+</header>
+{% endblock %}
+<main>
+{% if msg %}<p class="flash {{ 'pr' if pr }}" role="status">{% if pr %}{{ ico('trophy', 22) }}{% endif %}<span>{{ msg }}</span></p>{% endif %}
+{% if err %}<p class="flash bad" role="alert">{{ err }}</p>{% endif %}
+{% block content %}{% endblock %}
+</main>
+{% block nav %}{% set p = request.url.path %}
+<nav class="nav" aria-label="Main">
+<a href="/" class="{{ 'on' if p == '/' }}" {{ 'aria-current=page' if p == '/' }}>{{ ico('home') }}<span>Home</span></a>
+<a href="/progress" class="{{ 'on' if p == '/progress' }}" {{ 'aria-current=page' if p == '/progress' }}>{{ ico('chart') }}<span>Progress</span></a>
+<a href="/log" class="log {{ 'on' if p == '/log' }}" {{ 'aria-current=page' if p == '/log' }}><i>{{ ico('plus', 26) }}</i><span>Log</span></a>
+<a href="/crew" class="{{ 'on' if p == '/crew' }}" {{ 'aria-current=page' if p == '/crew' }}>{{ ico('users') }}<span>Crew</span></a>
+</nav>{% endblock %}
+</body>
+</html>
