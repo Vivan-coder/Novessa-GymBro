@@ -3,8 +3,9 @@
 {% block title %}Log workout - GymBro{% endblock %}
 {% block heading %}Log workout{% endblock %}
 {% block content %}
-<form class="card" method="post" action="/log">
-<label for="d">Date</label><input id="d" name="day" type="date" value="{{ today }}" max="{{ today }}" required>
+<form class="card" method="post" action="/log" id="logform" novalidate>
+<p class="mute" style="margin:0 0 8px">Logging for <strong>today, {{ today_label }}</strong> (date is set automatically)</p>
+<p id="err" class="flash bad" role="alert" hidden></p>
 <label for="e">Exercise</label>
 <select id="e" name="exercise">{% for x in exercises %}<option>{{ x }}</option>{% endfor %}<option value="__custom__">Add custom exercise...</option></select>
 <input id="c" name="custom" aria-label="Custom exercise name" placeholder="Exercise name" maxlength="60" hidden style="margin-top:8px">
@@ -17,13 +18,13 @@
 {% for n in [1,2,3] %}
 <div class="row set">
 <span class="setnum" aria-hidden="true">{{ n }}</span>
-<input aria-label="Set {{ n }} reps" name="reps" type="number" inputmode="numeric" min="1" placeholder="reps">
-<input aria-label="Set {{ n }} weight in kg" name="weight" type="number" inputmode="decimal" min="0" step="0.5" placeholder="kg">
+<input aria-label="Set {{ n }} reps" name="reps" type="number" inputmode="numeric" min="1" max="1000" placeholder="reps">
+<input aria-label="Set {{ n }} weight in kg" name="weight" type="number" inputmode="decimal" min="0" max="2000" step="0.5" placeholder="kg (blank = bodyweight)">
 </div>
 {% endfor %}
 </div>
 <button class="btn ghost" type="button" id="add">+ Add set</button>
-<button class="btn" type="submit">Save workout</button>
+<button class="btn" type="submit" id="save">Save workout</button>
 </form>
 
 <section class="card timer" aria-label="Rest timer">
@@ -56,8 +57,8 @@ function addRow(reps, kg) {
   const n = box.children.length + 1, r = document.createElement("div");
   r.className = "row set";
   r.innerHTML = '<span class="setnum" aria-hidden="true">' + n + '</span>' +
-    '<input aria-label="Set ' + n + ' reps" name="reps" type="number" inputmode="numeric" min="1" placeholder="reps">' +
-    '<input aria-label="Set ' + n + ' weight in kg" name="weight" type="number" inputmode="decimal" min="0" step="0.5" placeholder="kg">';
+    '<input aria-label="Set ' + n + ' reps" name="reps" type="number" inputmode="numeric" min="1" max="1000" placeholder="reps">' +
+    '<input aria-label="Set ' + n + ' weight in kg" name="weight" type="number" inputmode="decimal" min="0" max="2000" step="0.5" placeholder="kg (blank = bodyweight)">';
   if (reps != null) { r.children[1].value = reps; r.children[2].value = kg; }
   box.appendChild(r);
   return r;
@@ -80,6 +81,28 @@ document.getElementById("copy").onclick = () => {
   l.sets.forEach(s => addRow(s[0], s[1]));
 };
 showLast();
+
+// Validate before sending so mistakes are caught with a clear message
+const form = document.getElementById("logform"), err = document.getElementById("err");
+function fail(msg, el) { err.textContent = msg; err.hidden = false; if (el) el.focus(); err.scrollIntoView({block: "nearest"}); return false; }
+form.onsubmit = () => {
+  err.hidden = true;
+  if (sel.value === "__custom__" && !cu.value.trim()) return fail("Type a name for your exercise.", cu);
+  let filled = 0;
+  for (const row of box.children) {
+    const reps = row.children[1], kg = row.children[2], n = row.children[0].textContent;
+    if (!reps.value && !kg.value) continue;
+    if (!reps.value) return fail("Set " + n + ": enter the reps.", reps);
+    if (!(+reps.value >= 1 && +reps.value <= 1000 && Number.isInteger(+reps.value))) return fail("Set " + n + ": reps should be a whole number from 1 to 1000.", reps);
+    if (kg.value && !(+kg.value >= 0 && +kg.value <= 2000)) return fail("Set " + n + ": weight should be 0 to 2000 kg.", kg);
+    if (+reps.value > 50 && !confirm("Set " + n + ": " + reps.value + " reps - is that right?")) return fail("Fix set " + n + ".", reps);
+    if (+kg.value > 400 && !confirm("Set " + n + ": " + kg.value + " kg - is that right?")) return fail("Fix set " + n + ".", kg);
+    filled++;
+  }
+  if (!filled) return fail("Add at least one set with reps.", box.querySelector("input"));
+  document.getElementById("save").disabled = true;   // stop double-submits
+  return true;
+};
 
 // Rest timer
 let tick = null, left = 0;

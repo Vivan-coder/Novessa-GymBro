@@ -167,17 +167,18 @@ def log_page(request: Request):
     known = {n.lower() for n in DEFAULT_EXERCISES}
     exercises = DEFAULT_EXERCISES + [n for n in last if n.lower() not in known]
     return show(request, "log.html", exercises=exercises, recent=recent, last=last,
-                today=date.today().isoformat(), fmt=db.fmt_vol, **flash(request))
+                today=date.today().isoformat(), today_label=date.today().strftime("%a %d %b"), fmt=db.fmt_vol, **flash(request))
 
 
 @app.post("/log")
 async def log_save(request: Request):
     u = current_user(request)
     f = await request.form()
+    # The date is automatic: today, unless a valid past date is explicitly sent.
     try:
-        day = date.fromisoformat(f.get("day", ""))
+        day = date.fromisoformat(f["day"]) if f.get("day") else date.today()
     except ValueError:
-        return back("/log", "Pick a valid date.", True)
+        return back("/log", "That date isn't valid.", True)
     if day > date.today():
         return back("/log", "You can't log a future workout.", True)
     exercise = (f.get("custom") or "") if f.get("exercise") == "__custom__" else f.get("exercise", "")
@@ -188,6 +189,8 @@ async def log_save(request: Request):
     sets = []
     for reps, kg in zip(f.getlist("reps"), f.getlist("weight")):
         if not reps.strip():
+            if kg.strip():
+                return back("/log", "A set has a weight but no reps.", True)
             continue
         try:
             r, w = int(reps), float(kg or 0)
